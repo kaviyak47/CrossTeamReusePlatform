@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.3",
+  "findings": [
+    {
+      "function_a": {
+        "file": {
+          "path": "test_repos\\team_a\\employee.py",
+          "content_hash": "240a515037a6ea0f73fe68161ab715f13bbd4a0c5cd482b940f6d01045dc639e",
+          "language": "python"
+        },
+        "qualified_name": "calculate_net_salary",
+        "start_line": 1,
+        "end_line": 14,
+        "code_hash": "26ccc9db57b24cc71dbb44040ac749a6c4399bec0732795da3419c418154f4f9"
+      },
+      "function_b": {
+        "file": {
+          "path": "test_repos\\team_b\\worker.py",
+          "content_hash": "0d0a21b77226b8dd534ba97f7e07d27b116ee641b46bef7613916d7711a8e194",
+          "language": "python"
+        },
+        "qualified_name": "compute_take_home_pay",
+        "start_line": 1,
+        "end_line": 14,
+        "code_hash": "04405fbded096e43b42cf0b1b5057642041a173f6e312f91d4af9dd93a4801d5"
+      },
+      "score": 0.8277495222432272,
+      "duplicated_lines": 14,
+      "compare": {
+        "kind_a": "FUNC",
+        "kind_b": "FUNC",
+        "span_a": {
+          "start_line": 1,
+          "end_line": 14
+        },
+        "span_b": {
+          "start_line": 1,
+          "end_line": 14
+        },
+        "similarity": 0.8277495222432272,
+        "diff": "--- \n+++ \n@@ -1,8 +1,8 @@\n-def calculate_net_salary(base_pay: float, overtime_hours: float, hourly_rate: float, tax_bracket: float) -> dict:\n+def compute_take_home_pay(monthly_salary: float, extra_hours: float, rate_per_hour: float, tax_rate: float) -> dict:\n     pass\n-    overtime_compensation = overtime_hours * (hourly_rate * 1.5)\n-    gross_earnings = base_pay + overtime_compensation\n-    tax_withholding = gross_earnings * tax_bracket\n-    retirement_contribution = gross_earnings * 0.05\n-    take_home_pay = gross_earnings - tax_withholding - retirement_contribution\n-    return {'gross': round(gross_earnings, 2), 'tax': round(tax_withholding, 2), 'retirement': round(retirement_contribution, 2), 'net': round(take_home_pay, 2)}\n+    extra_pay = extra_hours * rate_per_hour * 1.5\n+    total_gross = monthly_salary + extra_pay\n+    deducted_tax = total_gross * tax_rate\n+    pension_deduction = total_gross * 0.05\n+    final_net_income = total_gross - (deducted_tax + pension_deduction)\n+    return {'gross': round(total_gross, 2), 'tax': round(deducted_tax, 2), 'retirement': round(pension_deduction, 2), 'net': round(final_net_income, 2)}"
+      },
+      "reasons": [
+        "func_threshold",
+        "min_window_hits"
+      ],
+      "metadata": {}
+    }
+  ],
+  "stats": {
+    "file_count": 2,
+    "function_count": 2,
+    "snippet_count": 6,
+    "candidate_count": 12,
+    "finding_count": 1,
+    "cache_hits": 6,
+    "cache_misses": 0
+  },
+  "config": {
+    "engine": "semantic"
+  },
+  "timing": {
+    "collect_files": 0.02269679994788021,
+    "extract_functions": 0.015218000044114888,
+    "generate_snippets": 0.007073800079524517,
+    "embed": 43.64794089994393,
+    "similarity": 1.6531910999910906
+  }
+}
