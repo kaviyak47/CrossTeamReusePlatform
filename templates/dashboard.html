@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Cross-Team Reuse Platform{% endblock %}
+
+{% block body %}
+
+<header class="topbar">
+  <span class="brand">Cross-Team Reuse Platform</span>
+
+  <div class="who">
+    <span>{{ session.display_name }}</span>
+
+    <form method="post" action="{{ url_for('logout') }}">
+      <button type="submit" class="btn quiet">Sign out</button>
+    </form>
+  </div>
+</header>
+
+
+<main class="page">
+
+  <!-- ACTIONS -->
+  <section class="actions" aria-label="What you can do">
+
+    <!-- PHASE 2: SEARCH -->
+    <a class="action" href="{{ url_for('search') }}">
+      <h2>Search existing work</h2>
+
+      <p>
+        Describe what you need, such as "a login module",
+        and see what teams already have.
+      </p>
+
+      <span class="badge">Search</span>
+    </a>
+
+
+    <!-- PHASE 3 -->
+    <a class="action" href="{{ url_for('check_file') }}">
+  <h2>Check a code file</h2>
+  <p>
+    Upload a partly written file and compare it against other teams' work.
+  </p>
+  <span class="badge">Check code</span>
+</a>
+     
+
+
+    <!-- PHASE 4 -->
+    <a class="action" href="{{ url_for('analyze_repository') }}">
+    <h2>Analyze a repository</h2>
+
+    <p>
+        Upload a ZIP of a selected team repository
+        to find duplicate work across teams.
+    </p>
+
+    <span class="badge">
+        Analyze repository
+    </span>
+</a>
+
+  </section>
+
+
+  <!-- REUSE RECOMMENDATIONS -->
+  <section aria-labelledby="results-heading">
+
+    <div class="results-head">
+
+      <h2 id="results-heading">
+        Reuse recommendations
+      </h2>
+
+      <div class="filters"
+           role="group"
+           aria-label="Filter by priority">
+
+        <button type="button"
+                class="filter active"
+                data-filter="ALL">
+          All <span>{{ counts.ALL }}</span>
+        </button>
+
+        <button type="button"
+                class="filter"
+                data-filter="HIGH">
+          High <span>{{ counts.HIGH }}</span>
+        </button>
+
+        <button type="button"
+                class="filter"
+                data-filter="MEDIUM">
+          Medium <span>{{ counts.MEDIUM }}</span>
+        </button>
+
+        <button type="button"
+                class="filter"
+                data-filter="LOW">
+          Low <span>{{ counts.LOW }}</span>
+        </button>
+
+      </div>
+
+    </div>
+
+
+    {% if load_error %}
+
+      <p class="notice error">
+        {{ load_error }}
+      </p>
+
+    {% elif not recommendations %}
+
+      <p class="notice">
+        No cross-team duplicates were found in the current results.
+      </p>
+
+    {% endif %}
+
+
+    {% for r in recommendations %}
+
+    <article class="match"
+             data-priority="{{ r.priority }}">
+
+      <!-- MATCH HEADER -->
+      <div class="match-top">
+
+        <span class="chip {{ r.priority|lower }}">
+          Priority: {{ r.priority|title }}
+        </span>
+
+        {% if r.match_type %}
+
+          <span class="muted">
+            Match type: {{ r.match_type }}
+          </span>
+
+        {% endif %}
+
+        {% if r.duplicated_lines is not none %}
+
+          <span class="muted">
+            {{ r.duplicated_lines }} duplicated lines
+          </span>
+
+        {% endif %}
+
+      </div>
+
+
+      <!-- SOURCE / MATCHED CODE -->
+      <div class="pair">
+
+        {% for side, label in
+           ((r.source, "Source"), (r.matched, "Matched")) %}
+
+        <div class="side">
+
+          <p class="side-label">
+            {{ label }}
+          </p>
+
+          <h3>
+            {{ side.function }}
+          </h3>
+
+          <dl>
+
+            <dt>Team</dt>
+            <dd>{{ side.team }}</dd>
+
+            <dt>File</dt>
+            <dd class="code">
+              {{ side.file }}
+            </dd>
+
+            <dt>Lines</dt>
+            <dd>
+              {{ side.lines }}
+            </dd>
+
+          </dl>
+
+        </div>
+
+        {% endfor %}
+
+      </div>
+
+
+      <!-- SCORES -->
+      <div class="scores">
+
+        <!-- SIMILARITY -->
+        <div class="score">
+
+          <p class="score-name">
+            Similarity score
+          </p>
+
+          <p class="score-value">
+            {{ "%.2f"|format(r.similarity) }}%
+          </p>
+
+          <div class="bar"
+               role="img"
+               aria-label="Similarity {{ '%.2f'|format(r.similarity) }} percent">
+
+            <span style="width: {{ r.bar_width }}%"></span>
+
+          </div>
+
+          <p class="score-note">
+            How alike the two pieces of code are.
+          </p>
+
+        </div>
+
+
+        <!-- ACCEPTANCE SCORE -->
+        <div class="score pending">
+
+          <p class="score-name">
+            Acceptance score
+          </p>
+
+          {% if r.acceptance is not none %}
+
+            <p class="score-value">
+              {{ r.acceptance }}
+            </p>
+
+          {% else %}
+
+            <p class="score-value">
+              Not scored yet
+            </p>
+
+            <div class="bar empty"
+                 aria-hidden="true">
+            </div>
+
+          {% endif %}
+
+          <p class="score-note">
+            How suitable this match is to reuse.
+            It will be calculated from factors shown
+            alongside the score.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- REASONS -->
+      <div class="why">
+
+        <h4>
+          Reason for match
+        </h4>
+
+        {% if r.reasons %}
+
+          <ul>
+
+            {% for reason in r.reasons %}
+
+              <li>
+                {{ reason }}
+              </li>
+
+            {% endfor %}
+
+          </ul>
+
+        {% else %}
+
+          <p class="muted">
+            No reason was recorded for this match.
+          </p>
+
+        {% endif %}
+
+      </div>
+
+
+      <!-- RECOMMENDATION -->
+      <div class="why">
+
+        <h4>
+          Recommendation
+        </h4>
+
+        <p>
+          {{ r.recommendation or
+             "No recommendation text was recorded." }}
+        </p>
+
+      </div>
+
+
+      <!-- CODE EVIDENCE -->
+      <details class="evidence">
+
+        <summary>
+          Code evidence
+        </summary>
+
+        {% if r.diff %}
+
+          <div class="diff"
+               role="table"
+               aria-label="Difference between the two functions">
+
+            {% for row in r.diff %}
+
+              <div class="diff-row {{ row.kind }}"
+                   role="row">
+
+                <span class="sign">
+                  {{ row.sign }}
+                </span>
+
+                <span class="line">
+                  {{ row.text }}
+                </span>
+
+              </div>
+
+            {% endfor %}
+
+          </div>
+
+          <p class="score-note">
+            Red lines are from the source function,
+            green lines from the matched one.
+          </p>
+
+        {% else %}
+
+          <p class="muted">
+            No code evidence was recorded for this match.
+          </p>
+
+        {% endif %}
+
+      </details>
+
+    </article>
+
+    {% endfor %}
+
+  </section>
+
+</main>
+
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+
+{% endblock %}

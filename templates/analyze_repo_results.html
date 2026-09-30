@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}
+Repository Analysis Results
+{% endblock %}
+
+{% block body %}
+
+<header class="topbar">
+    <span class="brand">
+        Cross-Team Reuse Platform
+    </span>
+
+    <div class="who">
+        <span>{{ session.display_name }}</span>
+
+        <form method="post" action="{{ url_for('logout') }}">
+            <button type="submit" class="btn quiet">
+                Sign out
+            </button>
+        </form>
+    </div>
+</header>
+
+<main class="page">
+
+    <a class="backlink" href="{{ url_for('analyze_repository') }}">
+        &larr; Analyze another repository
+    </a>
+
+    <h2 class="page-title">
+        Repository Analysis Results
+    </h2>
+
+    <div class="notice">
+        <strong>Team:</strong> {{ team_name }}
+        <br>
+        <strong>Files scanned:</strong> {{ files_scanned }}
+        <br>
+        <strong>Functions found:</strong> {{ functions_found }}
+        <br>
+        <strong>Potential reuse matches:</strong> {{ results|length }}
+    </div>
+
+    {% if results %}
+
+        {% for r in results %}
+
+        <article class="match">
+
+            <div class="match-top">
+
+                <span class="chip {{ r.priority|lower }}">
+                    Priority: {{ r.priority }}
+                </span>
+
+            </div>
+
+            <div class="pair">
+
+                <div class="side">
+
+                    <p class="side-label">
+                        Uploaded Team
+                    </p>
+
+                    <h3>
+                        {{ r.uploaded_function }}
+                    </h3>
+
+                    <dl>
+
+                        <dt>Team</dt>
+                        <dd>{{ r.uploaded_team }}</dd>
+
+                        <dt>File</dt>
+                        <dd class="code">
+                            {{ r.uploaded_file }}
+                        </dd>
+
+                    </dl>
+
+                </div>
+
+                <div class="side">
+
+                    <p class="side-label">
+                        Existing Work
+                    </p>
+
+                    <h3>
+                        {{ r.existing_function }}
+                    </h3>
+
+                    <dl>
+
+                        <dt>Team</dt>
+                        <dd>{{ r.existing_team }}</dd>
+
+                        <dt>File</dt>
+                        <dd class="code">
+                            {{ r.existing_file }}
+                        </dd>
+
+                    </dl>
+
+                </div>
+
+            </div>
+
+            <div class="scores">
+
+                <div class="score">
+
+                    <p class="score-name">
+                        Similarity Score
+                    </p>
+
+                    <p class="score-value">
+                        {{ "%.2f"|format(r.similarity) }}%
+                    </p>
+
+                    <div class="bar">
+                        <span
+                            style="width: {{ r.similarity }}%"
+                        ></span>
+                    </div>
+
+                </div>
+
+                <div class="score">
+
+                    <p class="score-name">
+                        Acceptance Score
+                    </p>
+
+                    <p class="score-value">
+                        {{ r.acceptance_score }}/100
+                    </p>
+
+                    <div class="bar">
+                        <span
+                            style="width: {{ r.acceptance_score }}%"
+                        ></span>
+                    </div>
+
+                    <p class="score-note">
+                        Helps developers prioritize whether
+                        the existing implementation is suitable
+                        for reuse.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="why">
+
+                <h4>
+                    Why this match matters
+                </h4>
+
+                <ul>
+
+                    <li>
+                        Code similarity:
+                        {{ "%.2f"|format(r.similarity) }}%
+                    </li>
+
+                    <li>
+                        Function-name similarity:
+                        {{ "%.2f"|format(r.function_similarity) }}%
+                    </li>
+
+                    <li>
+                        Estimated matching lines:
+                        {{ r.matching_lines }}
+                    </li>
+
+                    <li>
+                        Cross-team match
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <details class="evidence">
+
+                <summary>
+                    View code
+                </summary>
+
+                <div class="pair">
+
+                    <div class="side">
+
+                        <h4>
+                            Uploaded code
+                        </h4>
+
+                        <pre class="code">{{ r.uploaded_code }}</pre>
+
+                    </div>
+
+                    <div class="side">
+
+                        <h4>
+                            Existing code
+                        </h4>
+
+                        <pre class="code">{{ r.existing_code }}</pre>
+
+                    </div>
+
+                </div>
+
+            </details>
+
+        </article>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="notice">
+            No significant cross-team duplicate work was found.
+        </p>
+
+    {% endif %}
+
+</main>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+[
+  {
+    "source_team": "Team A",
+    "source_file": "test_repos/team_a/employee.py",
+    "source_function": "calculate_net_salary",
+    "source_lines": "1-14",
+    "matched_team": "Team B",
+    "matched_file": "test_repos/team_b/worker.py",
+    "matched_function": "compute_take_home_pay",
+    "matched_lines": "1-14",
+    "similarity_percentage": 82.77,
+    "duplicated_lines": 14,
+    "match_type": "FUNC <-> FUNC",
+    "reasons": [
+      "func_threshold",
+      "min_window_hits"
+    ],
+    "evidence": "--- \n+++ \n@@ -1,8 +1,8 @@\n-def calculate_net_salary(base_pay: float, overtime_hours: float, hourly_rate: float, tax_bracket: float) -> dict:\n+def compute_take_home_pay(monthly_salary: float, extra_hours: float, rate_per_hour: float, tax_rate: float) -> dict:\n     pass\n-    overtime_compensation = overtime_hours * (hourly_rate * 1.5)\n-    gross_earnings = base_pay + overtime_compensation\n-    tax_withholding = gross_earnings * tax_bracket\n-    retirement_contribution = gross_earnings * 0.05\n-    take_home_pay = gross_earnings - tax_withholding - retirement_contribution\n-    return {'gross': round(gross_earnings, 2), 'tax': round(tax_withholding, 2), 'retirement': round(retirement_contribution, 2), 'net': round(take_home_pay, 2)}\n+    extra_pay = extra_hours * rate_per_hour * 1.5\n+    total_gross = monthly_salary + extra_pay\n+    deducted_tax = total_gross * tax_rate\n+    pension_deduction = total_gross * 0.05\n+    final_net_income = total_gross - (deducted_tax + pension_deduction)\n+    return {'gross': round(total_gross, 2), 'tax': round(deducted_tax, 2), 'retirement': round(pension_deduction, 2), 'net': round(final_net_income, 2)}"
+  }
+]

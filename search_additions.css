@@ -1,0 +1,28 @@
+
+/* ===== Phase 2: Search existing work ===== */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.backlink { display: inline-block; margin-bottom: 1rem; color: var(--accent); text-decoration: none; font-size: 0.92rem; }
+.backlink:hover { text-decoration: underline; }
+.page-title { font-size: 1.5rem; margin-bottom: 0.3rem; }
+
+.searchbar { display: flex; gap: 0.6rem; margin: 1.2rem 0 1.6rem; }
+.searchbar input {
+  flex: 1; font: inherit; padding: 0.65rem 0.8rem;
+  border: 1px solid #b7c2cc; border-radius: 6px; background: #fff;
+}
+.result-count { font-weight: 600; margin-bottom: 1rem; }
+
+/* A dashboard tile that is now a working link */
+a.action.on {
+  display: block; color: inherit; text-decoration: none;
+  border-style: solid; border-color: var(--accent);
+}
+a.action.on:hover { background: #f7fbfd; }
+.badge.ready { background: var(--accent); color: var(--accent-ink); }
+
+@media (max-width: 760px) {
+  .searchbar { flex-direction: column; }
+}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Search existing work - Cross-Team Reuse Platform{% endblock %}
+{% block body %}
+<header class="topbar">
+  <span class="brand">Cross-Team Reuse Platform</span>
+  <div class="who">
+    <span>{{ session.display_name }}</span>
+    <form method="post" action="{{ url_for('logout') }}">
+      <button type="submit" class="btn quiet">Sign out</button>
+    </form>
+  </div>
+</header>
+
+<main class="page">
+  <a class="backlink" href="{{ url_for('dashboard') }}">&larr; Back to dashboard</a>
+
+  <section aria-labelledby="search-heading">
+    <h2 id="search-heading" class="page-title">Search existing work</h2>
+    <p class="muted">Describe what you need, such as "salary calculation" or "login", to see
+      whether another team has already built something similar.</p>
+
+    <form class="searchbar" method="get" action="{{ url_for('search') }}" role="search">
+      <label for="q" class="sr-only">Search existing work</label>
+      <input type="search" id="q" name="q" value="{{ query }}"
+             placeholder="e.g. calculate net salary" autocomplete="off" autofocus>
+      <button type="submit" class="btn primary">Search</button>
+    </form>
+  </section>
+
+  <section aria-live="polite">
+    {% if load_error %}
+      <p class="notice error">{{ load_error }}</p>
+
+    {% elif not searched and not query %}
+      <p class="notice">Type a word or phrase above and press Search.
+        Currently {{ total_findings }} analyzed finding{{ '' if total_findings == 1 else 's' }} can be searched.</p>
+
+    {% elif too_vague %}
+      <p class="notice">Please use a more specific search, such as a function or feature name.</p>
+
+    {% elif results %}
+      <p class="result-count">{{ results|length }} result{{ '' if results|length == 1 else 's' }}
+        for &ldquo;{{ query }}&rdquo;</p>
+
+      {% for item in results %}
+      {% set r = item.rec %}
+      <article class="match">
+        <div class="match-top">
+          <span class="chip {{ r.priority|lower }}">Priority: {{ r.priority|title }}</span>
+          {% if item.matched_terms %}
+            <span class="muted">Matched on: {{ item.matched_terms|join(", ") }}</span>
+          {% endif %}
+        </div>
+
+        <div class="pair">
+          {% for side, label in ((r.source, "Source"), (r.matched, "Matched")) %}
+          <div class="side">
+            <p class="side-label">{{ label }}</p>
+            <h3>{{ side.function }}</h3>
+            <dl>
+              <dt>Team</dt><dd>{{ side.team }}</dd>
+              <dt>File</dt><dd class="code">{{ side.file }}</dd>
+              <dt>Lines</dt><dd>{{ side.lines }}</dd>
+            </dl>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="scores">
+          <div class="score">
+            <p class="score-name">Similarity score</p>
+            <p class="score-value">{{ "%.2f"|format(r.similarity) }}%</p>
+            <div class="bar" role="img" aria-label="Similarity {{ '%.2f'|format(r.similarity) }} percent">
+              <span style="width: {{ r.bar_width }}%"></span>
+            </div>
+            <p class="score-note">How alike the two pieces of code are.</p>
+          </div>
+
+          <div class="score pending">
+            <p class="score-name">Acceptance score</p>
+            {% if r.acceptance is not none %}
+              <p class="score-value">{{ r.acceptance }}</p>
+            {% else %}
+              <p class="score-value">Not scored yet</p>
+              <div class="bar empty" aria-hidden="true"></div>
+            {% endif %}
+            <p class="score-note">How suitable this match is to reuse.</p>
+          </div>
+        </div>
+
+        <div class="why">
+          <h4>Recommendation</h4>
+          <p>{{ r.recommendation or "No recommendation text was recorded." }}</p>
+        </div>
+
+        <details class="evidence">
+          <summary>Code evidence</summary>
+          {% if r.diff %}
+          <div class="diff" role="table" aria-label="Difference between the two functions">
+            {% for row in r.diff %}
+              <div class="diff-row {{ row.kind }}" role="row"><span class="sign">{{ row.sign }}</span><span class="line">{{ row.text }}</span></div>
+            {% endfor %}
+          </div>
+          <p class="score-note">Red lines are from the source function, green lines from the matched one.</p>
+          {% else %}
+            <p class="muted">No code evidence was recorded for this match.</p>
+          {% endif %}
+        </details>
+      </article>
+      {% endfor %}
+
+    {% else %}
+      <p class="notice"><strong>No matches found for &ldquo;{{ query }}&rdquo;.</strong>
+        Nothing in the analyzed work looks related, so this may be new work for your team.
+        Try different or fewer words, for example a function name like &ldquo;salary&rdquo;.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

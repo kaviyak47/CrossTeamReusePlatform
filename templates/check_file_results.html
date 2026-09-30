@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Code Analysis Results - Cross-Team Reuse Platform{% endblock %}
+
+{% block body %}
+
+<header class="topbar">
+    <span class="brand">Cross-Team Reuse Platform</span>
+
+    <div class="who">
+        <span>{{ session.display_name }}</span>
+
+        <form method="post" action="{{ url_for('logout') }}">
+            <button type="submit" class="btn quiet">Sign out</button>
+        </form>
+    </div>
+</header>
+
+
+<main class="page">
+
+    <a class="backlink" href="{{ url_for('check_file') }}">
+        &larr; Check another file
+    </a>
+
+
+    <h2 class="page-title">
+        Code Analysis Results
+    </h2>
+
+
+    <p class="muted">
+        Uploaded file:
+        <strong>{{ filename }}</strong>
+    </p>
+
+
+    {% if results %}
+
+        <p class="result-count">
+            {{ results|length }}
+            possible reusable implementation{{ '' if results|length == 1 else 's' }}
+            found.
+        </p>
+
+
+        {% for result in results %}
+
+        <article class="match">
+
+
+            <!-- RESULT HEADER -->
+
+            <div class="match-top">
+
+                <span class="chip {{ result.priority|lower }}">
+                    Priority: {{ result.priority|title }}
+                </span>
+
+                <span class="muted">
+                    Another team: {{ result.existing_team }}
+                </span>
+
+            </div>
+
+
+            <!-- CODE COMPARISON -->
+
+            <div class="pair">
+
+
+                <!-- UPLOADED CODE -->
+
+                <div class="side">
+
+                    <p class="side-label">
+                        Uploaded code
+                    </p>
+
+                    <h3>
+                        {{ result.uploaded_function }}
+                    </h3>
+
+                    <dl>
+
+                        <dt>File</dt>
+
+                        <dd class="code">
+                            {{ result.uploaded_file }}
+                        </dd>
+
+                    </dl>
+
+                </div>
+
+
+                <!-- EXISTING CODE -->
+
+                <div class="side">
+
+                    <p class="side-label">
+                        Existing implementation
+                    </p>
+
+                    <h3>
+                        {{ result.existing_function }}
+                    </h3>
+
+                    <dl>
+
+                        <dt>Team</dt>
+
+                        <dd>
+                            {{ result.existing_team }}
+                        </dd>
+
+
+                        <dt>File</dt>
+
+                        <dd class="code">
+                            {{ result.existing_file }}
+                        </dd>
+
+                    </dl>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- SCORES -->
+
+            <div class="scores">
+
+
+                <!-- SIMILARITY -->
+
+                <div class="score">
+
+                    <p class="score-name">
+                        Similarity Score
+                    </p>
+
+                    <p class="score-value">
+                        {{ "%.1f"|format(result.similarity) }}%
+                    </p>
+
+                    <div class="bar">
+
+                        <span
+                            style="width: {{ result.similarity }}%">
+                        </span>
+
+                    </div>
+
+                    <p class="score-note">
+                        How similar the two code implementations are.
+                    </p>
+
+                </div>
+
+
+
+                <!-- ACCEPTANCE -->
+
+                <div class="score">
+
+                    <p class="score-name">
+                        Acceptance Score
+                    </p>
+
+                    <p class="score-value">
+                        {{ "%.1f"|format(result.acceptance_score) }}/100
+                    </p>
+
+                    <div class="bar">
+
+                        <span
+                            style="width: {{ result.acceptance_score }}%">
+                        </span>
+
+                    </div>
+
+                    <p class="score-note">
+                        Indicates how suitable the existing implementation
+                        may be for reuse.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- WHY -->
+
+            <div class="why">
+
+                <h4>
+                    Why was this suggested?
+                </h4>
+
+                <ul>
+
+                    <li>
+                        Code similarity:
+                        {{ "%.1f"|format(result.similarity) }}%
+                    </li>
+
+                    <li>
+                        Function similarity:
+                        {{ "%.1f"|format(result.function_similarity) }}%
+                    </li>
+
+                    <li>
+                        Matching code evidence:
+                        approximately {{ result.matching_lines }} lines
+                    </li>
+
+                    <li>
+                        The implementation belongs to another team.
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+
+            <!-- RECOMMENDATION -->
+
+            <div class="why">
+
+                <h4>
+                    Recommendation
+                </h4>
+
+
+                {% if result.acceptance_score >= 80 %}
+
+                    <p>
+                        High acceptance score. Review the existing
+                        implementation before developing the same
+                        functionality from scratch.
+                    </p>
+
+                {% elif result.acceptance_score >= 60 %}
+
+                    <p>
+                        Moderate acceptance score. Review the existing
+                        implementation and determine whether it satisfies
+                        the current requirement.
+                    </p>
+
+                {% else %}
+
+                    <p>
+                        Lower acceptance score. Similarity was detected,
+                        but manual review is recommended before considering
+                        reuse.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+
+            <!-- DEVELOPER DECISION -->
+
+            <div class="why">
+
+                <h4>
+                    Developer Decision
+                </h4>
+
+                <p class="score-note">
+                    The acceptance score is provided as supporting evidence.
+                    The developer or team makes the final reuse decision.
+                </p>
+
+
+                <form
+                    method="post"
+                    action="{{ url_for('recommendation_feedback') }}"
+                >
+
+                    <input
+                        type="hidden"
+                        name="uploaded_file"
+                        value="{{ result.uploaded_file }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="uploaded_function"
+                        value="{{ result.uploaded_function }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="existing_team"
+                        value="{{ result.existing_team }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="existing_file"
+                        value="{{ result.existing_file }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="existing_function"
+                        value="{{ result.existing_function }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="acceptance_score"
+                        value="{{ result.acceptance_score }}"
+                    >
+
+
+                    <div style="display:flex; gap:12px; margin-top:15px;">
+
+                        <button
+                            type="submit"
+                            name="decision"
+                            value="ACCEPT"
+                            class="btn primary"
+                        >
+                            ✓ Accept for Reuse
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            name="decision"
+                            value="REJECT"
+                            class="btn quiet"
+                        >
+                            ✕ Reject
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- CODE EVIDENCE -->
+
+            <details class="evidence">
+
+                <summary>
+                    View code evidence
+                </summary>
+
+
+                <h4>
+                    Uploaded function
+                </h4>
+
+                <pre class="diff">{{ result.uploaded_code }}</pre>
+
+
+                <h4>
+                    Existing implementation
+                </h4>
+
+                <pre class="diff">{{ result.existing_code }}</pre>
+
+            </details>
+
+
+        </article>
+
+        {% endfor %}
+
+
+    {% else %}
+
+
+        <div class="notice">
+
+            <strong>
+                No significant similar implementation was found.
+            </strong>
+
+            <p>
+                The uploaded code did not have a strong enough
+                similarity with the currently indexed team repositories.
+            </p>
+
+        </div>
+
+
+    {% endif %}
+
+</main>
+
+{% endblock %}

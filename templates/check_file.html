@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Check a Code File - Cross-Team Reuse Platform{% endblock %}
+
+{% block body %}
+
+<header class="topbar">
+    <span class="brand">Cross-Team Reuse Platform</span>
+
+    <div class="who">
+        <span>{{ session.display_name }}</span>
+
+        <form method="post" action="{{ url_for('logout') }}">
+            <button type="submit" class="btn quiet">Sign out</button>
+        </form>
+    </div>
+</header>
+
+<main class="page">
+
+    <a class="backlink" href="{{ url_for('dashboard') }}">
+        &larr; Back to dashboard
+    </a>
+
+    <section>
+
+        <h2 class="page-title">Check a code file</h2>
+
+        <p class="muted">
+            Upload a partly written code file to check whether
+            another team has already implemented similar functionality.
+        </p>
+
+        <div class="upload-box">
+
+            <form
+                method="post"
+                enctype="multipart/form-data"
+            >
+
+                <label for="code_file">
+                    <strong>Choose a Python file</strong>
+                </label>
+
+                <br><br>
+
+                <input
+                    type="file"
+                    id="code_file"
+                    name="code_file"
+                    accept=".py"
+                    required
+                >
+
+                <br><br>
+
+                <p class="muted">
+                    Your uploaded code is analyzed as text.
+                    It is never executed.
+                </p>
+
+                <button
+                    type="submit"
+                    class="btn primary"
+                >
+                    Analyze Code
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+</main>
+
+{% endblock %}

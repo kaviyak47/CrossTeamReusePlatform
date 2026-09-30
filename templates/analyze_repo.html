@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze Repository - Cross-Team Reuse Platform{% endblock %}
+
+{% block body %}
+
+<header class="topbar">
+    <span class="brand">Cross-Team Reuse Platform</span>
+
+    <div class="who">
+        <span>{{ session.display_name }}</span>
+
+        <form method="post" action="{{ url_for('logout') }}">
+            <button type="submit" class="btn quiet">
+                Sign out
+            </button>
+        </form>
+    </div>
+</header>
+
+<main class="page">
+
+    <a class="backlink" href="{{ url_for('dashboard') }}">
+        &larr; Back to dashboard
+    </a>
+
+    <h2 class="page-title">
+        Analyze a repository
+    </h2>
+
+    <p class="muted">
+        Upload a ZIP of a team's selected source code.
+        The platform analyzes the code as text and does not execute it.
+    </p>
+
+    {% if error %}
+        <p class="notice error">
+            {{ error }}
+        </p>
+    {% endif %}
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        class="upload-form"
+    >
+
+        <label for="team_name">
+            Team name
+        </label>
+
+        <input
+            type="text"
+            id="team_name"
+            name="team_name"
+            placeholder="Example: Team C"
+            required
+        >
+
+        <label for="repo_file">
+            Repository ZIP
+        </label>
+
+        <input
+            type="file"
+            id="repo_file"
+            name="repo_file"
+            accept=".zip"
+            required
+        >
+
+        <button type="submit" class="btn primary">
+            Analyze Repository
+        </button>
+
+    </form>
+
+    <div class="notice">
+        <strong>Privacy note:</strong>
+        Only the files explicitly uploaded by the team are analyzed.
+        The platform does not require the team's entire private repository.
+    </div>
+
+</main>
+
+{% endblock %}

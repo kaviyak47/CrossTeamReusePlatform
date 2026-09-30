@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Sign in - Cross-Team Reuse Platform{% endblock %}
+{% block body_class %}login-page{% endblock %}
+{% block body %}
+<main class="login">
+  <section class="login-intro">
+    <h1>Find out if someone already built it.</h1>
+    <p>
+      This platform compares code across teams and points you to existing
+      implementations you can reuse, before you spend days writing the same thing again.
+    </p>
+  </section>
+
+  <section class="login-card">
+    <h2>Sign in</h2>
+    {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+      <button type="submit" class="btn primary">Sign in</button>
+    </form>
+    <p class="hint">Demo account for the college project: <b>demo</b> / <b>demo123</b></p>
+  </section>
+</main>
+{% endblock %}
